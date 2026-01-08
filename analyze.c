@@ -202,7 +202,16 @@ int an_analyze()
   usedClusters = 0;
   diskFragmentation = an_getFileFragmentation(bpb.BPB_RootClus, 0);
   an_scanDisk(bpb.BPB_RootClus);
-  diskFragmentation /= (tableCount - 1);
+  int fileCount = tableCount - 1;
+  /* root-only case: avoid dividing by zero when only root cluster exists */
+  if (fileCount == 0)
+  {
+    diskFragmentation = 0.0f;
+  }
+  else
+  {
+    diskFragmentation /= fileCount;
+  }
 
   fprintf(output_stream, _("Disk is fragmented for: %.2f%%\n"), diskFragmentation);
  

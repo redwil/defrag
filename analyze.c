@@ -129,7 +129,7 @@ float an_getFileFragmentation(unsigned long startCluster, unsigned long aTIndex)
   * During the traversation it stores into aTable important information about directory item, such as starting cluster,
   * number of directory cluster that contains link for given item and index in the directory cluster. Besides it calls
   * for each item the an_getFileFragmentation function (to get its percentage fragmentation). This fragmentation is added to global
-  * variable called diskFragmentation. Be careful! The FAT table has to be OK; in the other case there can be circular referrences
+  * variable called diskFragmentation (root cluster excluded). Be careful! The FAT table has to be OK; in the other case there can be circular referrences
   * (or cross references)!
   * @param startCluster number of root cluster (from where should the traversation start)
 */
@@ -186,7 +186,8 @@ void an_scanDisk(unsigned long startCluster)
   * some preparation operations, such as it gets number of items in directory and adds first
   * value into aTable - the root cluster, and computes its fragmentation. After finishing
   * recursive traversation of directory structure it computes global percentage disk fragmentation
-  * by dividing diskFragmentation variable by number of items in aTable.
+  * by dividing diskFragmentation variable by number of non-root items in aTable (overall
+  * fragmentation excludes the root directory).
   */
 int an_analyze()
 {
@@ -200,7 +201,8 @@ int an_analyze()
   /* table contains also root cluster */
   an_addFile(bpb.BPB_RootClus, 0, 0, 1);
   usedClusters = 0;
-  diskFragmentation = an_getFileFragmentation(bpb.BPB_RootClus, 0);
+  diskFragmentation = 0.0f;
+  an_getFileFragmentation(bpb.BPB_RootClus, 0);
   an_scanDisk(bpb.BPB_RootClus);
   diskFragmentation /= (tableCount - 1);
 
